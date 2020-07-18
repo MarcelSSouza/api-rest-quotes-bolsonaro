@@ -1,73 +1,49 @@
-//setando a variavel do restify e do mongoose
-const restify = require('restify')
-const mongoose = require('mongoose')
+const restify = require ('restify')
+const mongoose= require('mongoose')
+const bodyparser= require('body-parser')
 
-
-
-//conexão com DB com criação de Schema
 mongoose.connect('mongodb+srv://admin:admin@cluster0.i0bcx.gcp.mongodb.net/Cluster0?retryWrites=true&w=majority')
-    .then(() => {
+.then(() => {
+    const server = restify.createServer({
+        name: "Bozo-API",
+        version: '1.0.0',
+        ignoreTrailingSlash: true
+    })
 
-        //Caracteristicas da api
-        const server = restify.createServer({
-            name: "My-rest-API",
-            version: '1.0.0',
-            ignoreTrailingSlash: true
+    server.use(restify.plugins.bodyParser())
+
+
+    const bozoSchema= new mongoose.Schema({
+        text: {
+            type: String,
+            required: true
+        }
+    })
+
+
+
+    const Bozo=mongoose.model("Frases", bozoSchema)
+    //pode-se usar app.all ou app.use para tratar todos os metodos http
+    server.get('/', (req,resp,next) => {
+        Bozo.find().then (resposta=>{
+            resp.json(resposta)
+            return next()
         })
+    })
 
-        //faz o parser do req.body
-        server.use(restify.plugins.bodyParser())
-
-        const alunoSchema = new mongoose.Schema({
-            name: {
-                type: String,
-                required: true
-            },
-            idade:{
-                type:String
-            }
+    server.post('/', (req,resp,next) => {
+        let frase=new Bozo(req.body)
+        frase.save().then(resposta=>{
+            resp.json(resposta)
         })
+    })
+    app.use(bodyParser.json())
 
-        //Cria uma collection com molde do nosso Schema já compilado
-        const Aluno = mongoose.model('Aluno', alunoSchema)
+    server.listen(3020, () => {
+        console.log("servidor Rodando")
+    })
 
-        //configurando uma url e setando a sua funcao (req= pedido e res=resposta que daremos)
-        server.get('/alunos', (req, resp, next) => {
-            Aluno.find().then(alunos => { //Usamos como na linguagem do Mongo
-                resp.json(alunos)
-                return next()
-            })
-        })
+})
 
-        server.get('/alunos/:id', (req, resp, next) => {
-            Aluno.findById(req.params.id).then(aluno => {
-                    if (aluno) {
-                        resp.json(aluno)
-                    } else {
-                        resp.status(404)
-                        resp.json({
-                            message: 'not found'})
-                    }
-                    return next()
-                })
-        })
+//Usamos o middleware com app.use e usamos antes ou depois de uma rota, mas temos que sempre por o parametro NEXT EM TODOS OS MIDDEWARES   
 
-
-        server.post('/alunos', (req, resp, next) => {
-            let aluno = new Aluno(req.body)
-            aluno.save().then(aluno => {
-                resp.json(aluno)
-            }).catch(error => {
-                resp.status(4000)
-                resp.json({
-                    message: error.message
-                })
-            })
-        })
-
-
-        //iniciando a porta do servidor
-        server.listen(3060, () => {
-            console.log("Servidor Rodando")
-        })
-    }).catch(console.error)
