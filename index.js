@@ -12,15 +12,12 @@ mongoose.connect('mongodb+srv://admin:admin@cluster0.i0bcx.gcp.mongodb.net/Clust
 
     server.use(restify.plugins.bodyParser())
 
-
     const bozoSchema= new mongoose.Schema({
         text: {
             type: String,
             required: true
         }
     })
-
-
 
     const Bozo=mongoose.model("Frases", bozoSchema)
     //pode-se usar app.all ou app.use para tratar todos os metodos http
@@ -39,11 +36,10 @@ mongoose.connect('mongodb+srv://admin:admin@cluster0.i0bcx.gcp.mongodb.net/Clust
     })
     app.use(bodyParser.json())
 
-    server.listen(3020, () => {
+    server.listen(process.env.PORT || 3030, () => {
         console.log("servidor Rodando")
     })
 
 })
 
 //Usamos o middleware com app.use e usamos antes ou depois de uma rota, mas temos que sempre por o parametro NEXT EM TODOS OS MIDDEWARES   
-
