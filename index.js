@@ -1,8 +1,11 @@
 const restify = require ('restify')
 const mongoose= require('mongoose')
 const bodyparser= require('body-parser')
-
-mongoose.connect('mongodb+srv://admin:admin@cluster0.i0bcx.gcp.mongodb.net/Cluster0?retryWrites=true&w=majority')
+const cors = require("cors")
+mongoose.connect(process.env.MONGO_URL,
+    {
+        useNewUrlParser:true
+    })
 .then(() => {
     const server = restify.createServer({
         name: "Bozo-API",
@@ -12,15 +15,12 @@ mongoose.connect('mongodb+srv://admin:admin@cluster0.i0bcx.gcp.mongodb.net/Clust
 
     server.use(restify.plugins.bodyParser())
 
-
     const bozoSchema= new mongoose.Schema({
         text: {
             type: String,
             required: true
         }
     })
-
-
 
     const Bozo=mongoose.model("Frases", bozoSchema)
     //pode-se usar app.all ou app.use para tratar todos os metodos http
@@ -39,6 +39,8 @@ mongoose.connect('mongodb+srv://admin:admin@cluster0.i0bcx.gcp.mongodb.net/Clust
     })
     app.use(bodyParser.json())
 
+    app.use(cors())
+
     server.listen(3020, () => {
         console.log("servidor Rodando")
     })
@@ -46,4 +48,3 @@ mongoose.connect('mongodb+srv://admin:admin@cluster0.i0bcx.gcp.mongodb.net/Clust
 })
 
 //Usamos o middleware com app.use e usamos antes ou depois de uma rota, mas temos que sempre por o parametro NEXT EM TODOS OS MIDDEWARES   
-
